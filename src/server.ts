@@ -16,7 +16,6 @@ const app = express();
 app.use(express.json()); //add JSON body parser to each following route handler
 app.use(cors()); //add CORS support to each following route handler
 
-
 app.get("/", async (req, res) => {
   res.json({ msg: "Hello! There's nothing interesting for GET /" });
 });
@@ -34,7 +33,6 @@ app.get("/", async (req, res) => {
       .send("An error occurred when fetching products. Check server logs.");
   }
 });
-
 
 //POST PRODUCTS
 app.post<{}, {}, { title: string; content: string }>(
@@ -57,7 +55,6 @@ app.post<{}, {}, { title: string; content: string }>(
   }
 );
 
-
 // DELETE PRODUCTS
 
 app.delete<{ pasteId: string }, {}, {}>(
@@ -66,13 +63,8 @@ app.delete<{ pasteId: string }, {}, {}>(
     try {
       client.query("BEGIN;");
       const queryValues = [req.params.pasteId];
-      const queryToDeleteComments = "DELETE FROM comments WHERE paste_id = $1";
       const queryToDeletePaste =
         "DELETE FROM pastes WHERE id = $1 RETURNING * ";
-      const deleteCommentsResponse = await client.query(
-        queryToDeleteComments,
-        queryValues
-      );
       const deletePasteResponse = await client.query(
         queryToDeletePaste,
         queryValues
@@ -87,9 +79,6 @@ app.delete<{ pasteId: string }, {}, {}>(
     }
   }
 );
-
-
-
 
 app.get("/health-check", async (req, res) => {
   try {
