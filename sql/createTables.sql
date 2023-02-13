@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS food;
+DROP TABLE IF EXISTS products;
 
 CREATE TABLE  food (
     id          serial PRIMARY KEY,

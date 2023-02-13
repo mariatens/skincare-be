@@ -21,6 +21,76 @@ app.get("/", async (req, res) => {
   res.json({ msg: "Hello! There's nothing interesting for GET /" });
 });
 
+//GET PRODUCTS
+app.get("/", async (req, res) => {
+  try {
+    const queryText = "";
+    const queryResponse = await client.query(queryText);
+    res.json(queryResponse.rows);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send("An error occurred when fetching products. Check server logs.");
+  }
+});
+
+
+//POST PRODUCTS
+app.post<{}, {}, { title: string; content: string }>(
+  "/pastes",
+  async (req, res) => {
+    try {
+      const title = req.body.title;
+      const content = req.body.content;
+      const queryText =
+        "INSERT INTO pastes (title, content) VALUES ($1, $2) RETURNING *";
+      const queryValues = [title, content];
+      const queryResponse = await client.query(queryText, queryValues);
+      res.json(queryResponse.rows[0]);
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .send("An error occurred when posting a paste. Check server logs.");
+    }
+  }
+);
+
+
+// DELETE PRODUCTS
+
+app.delete<{ pasteId: string }, {}, {}>(
+  "/pastes/:pasteId",
+  async (req, res) => {
+    try {
+      client.query("BEGIN;");
+      const queryValues = [req.params.pasteId];
+      const queryToDeleteComments = "DELETE FROM comments WHERE paste_id = $1";
+      const queryToDeletePaste =
+        "DELETE FROM pastes WHERE id = $1 RETURNING * ";
+      const deleteCommentsResponse = await client.query(
+        queryToDeleteComments,
+        queryValues
+      );
+      const deletePasteResponse = await client.query(
+        queryToDeletePaste,
+        queryValues
+      );
+      client.query("COMMIT;");
+      res.json(deletePasteResponse.rows[0]);
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .send("An error occurred when deleting a paste. Check server logs.");
+    }
+  }
+);
+
+
+
+
 app.get("/health-check", async (req, res) => {
   try {
     //For this to be successful, must connect to db
